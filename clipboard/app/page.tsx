@@ -123,7 +123,7 @@ const ContentSplitterPage = () => {
             {!fullScreen && (
               <button
               onClick={splitContent}
-              className="w-full sm:w-auto px-5 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              className="w-full sm:w-auto px-5 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
               >
               Split Content
               </button>

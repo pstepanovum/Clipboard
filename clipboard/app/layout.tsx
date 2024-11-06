@@ -15,7 +15,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Clipboard.",
-  description: "Clipboard. Built with Next.js",
+  description: "Clipboard. Built with Next.js. This project is a simple clipboard manager that helps you keep track of your copied text and manage it efficiently.",
 };
 
 export default function RootLayout({
