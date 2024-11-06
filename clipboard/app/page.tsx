@@ -18,31 +18,16 @@ const ContentSplitterPage = () => {
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [copyFeedback, setCopyFeedback] = useState<number | null>(null);
   const [fullScreen, setFullScreen] = useState<boolean>(false); // Full-screen mode state
-  const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false); // Detect keyboard visibility
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Detect keyboard visibility on focus
+  // Prevent page scroll in full-screen mode
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerHeight < document.documentElement.clientHeight) {
-        // Keyboard is visible
-        setKeyboardVisible(true);
-      } else {
-        // Keyboard is hidden
-        setKeyboardVisible(false);
-      }
-    };
-
-    // Add event listeners
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("focusin", handleResize);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("focusin", handleResize);
-    };
-  }, []);
+    if (fullScreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [fullScreen]);
 
   const splitContent = () => {
     const mainSectionRegex = /(?=\n?\d+\.\s)/;
@@ -156,11 +141,10 @@ const ContentSplitterPage = () => {
                 onFocus={() => setFullScreen(true)}
               />
 
-              {/* Display the "Split Content" button above the keyboard when it is visible */}
-              {keyboardVisible && fullScreen && (
+              {fullScreen && (
                 <button
                   onClick={splitContent}
-                  className="w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors fixed bottom-16 left-0 sm:bottom-8"
+                  className="w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors fixed bottom-4 left-0"
                 >
                   Split Content
                 </button>
