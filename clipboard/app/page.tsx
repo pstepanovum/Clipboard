@@ -25,7 +25,7 @@ const ContentSplitterPage = () => {
   useEffect(() => {
     const handleFocus = () => {
       setIsKeyboardVisible(true);
-      // Add delay to ensure smooth transition after keyboard appears (Test)
+      // Add delay to ensure smooth transition after keyboard appears
       setTimeout(() => {
         if (contentRef.current) {
           contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
