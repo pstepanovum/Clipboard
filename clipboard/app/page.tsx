@@ -1,7 +1,6 @@
-// app/content-splitter/page.tsx
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Clipboard,
   ChevronRight,
@@ -20,6 +19,15 @@ const ContentSplitterPage = () => {
   const [copyFeedback, setCopyFeedback] = useState<number | null>(null);
   const [fullScreen, setFullScreen] = useState<boolean>(false); // Full-screen mode state
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Prevent page scroll in full-screen mode
+  useEffect(() => {
+    if (fullScreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [fullScreen]);
 
   const splitContent = () => {
     const mainSectionRegex = /(?=\n?\d+\.\s)/;

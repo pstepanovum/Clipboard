@@ -18,10 +18,30 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5; /* Improving line height for readability */
 }
 
 input, textarea {
   font-size: 16px; /* Ensure a font size of 16px or larger */
   touch-action: manipulation; /* Prevents zooming when focusing on form elements */
+  line-height: 1.5; /* Improving readability for inputs */
 }
 
+/* Optional: Add responsive typography */
+@media (max-width: 768px) {
+  body {
+    font-size: 1rem; /* Use rem for scalability */
+  }
+  input, textarea {
+    font-size: 1rem; /* Maintain 16px on small screens */
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    font-size: 1.125rem; /* Slightly larger text on larger screens */
+  }
+  input, textarea {
+    font-size: 1.125rem; /* Make text area and input slightly larger */
+  }
+}
