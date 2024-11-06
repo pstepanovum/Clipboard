@@ -20,6 +20,7 @@ const ContentSplitterPage = () => {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Handle iOS keyboard and viewport adjustments
   useEffect(() => {
@@ -27,19 +28,30 @@ const ContentSplitterPage = () => {
       setIsKeyboardVisible(true);
       // Add delay to ensure smooth transition after keyboard appears
       setTimeout(() => {
-        if (contentRef.current) {
-          contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (contentRef.current && buttonRef.current) {
+          // Calculate the position to scroll
+          const buttonBottom = buttonRef.current.getBoundingClientRect().bottom;
+          const viewportHeight = window.innerHeight;
+          const scrollAmount = buttonBottom - viewportHeight + 20; // 20px buffer
+
+          if (scrollAmount > 0) {
+            window.scrollTo({
+              top: window.scrollY + scrollAmount,
+              behavior: 'smooth'
+            });
+          }
         }
       }, 100);
     };
 
     const handleBlur = () => {
       setIsKeyboardVisible(false);
+      // Scroll back to original position when keyboard hides
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Handle iOS viewport height changes
     const handleResize = () => {
-      // Only update if we're in fullscreen mode
       if (fullScreen) {
         const vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -53,7 +65,7 @@ const ContentSplitterPage = () => {
     }
 
     window.addEventListener('resize', handleResize);
-    handleResize(); // Initial call
+    handleResize();
 
     return () => {
       if (textArea) {
@@ -68,7 +80,6 @@ const ContentSplitterPage = () => {
   useEffect(() => {
     if (fullScreen) {
       document.body.style.overflow = "hidden";
-      // Set initial viewport height
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     } else {
@@ -187,9 +198,10 @@ const ContentSplitterPage = () => {
 
             <div 
               ref={contentRef}
-              className={`space-y-2 flex-grow relative ${
-                isKeyboardVisible ? 'pb-20' : ''
-              }`}
+              className="space-y-2 flex-grow relative"
+              style={{
+                paddingBottom: isKeyboardVisible ? '80px' : '0'
+              }}
             >
               <textarea
                 ref={textAreaRef}
@@ -197,25 +209,34 @@ const ContentSplitterPage = () => {
                   fullScreen ? "flex-grow" : "h-32"
                 }`}
                 style={{
-                  height: fullScreen ? isKeyboardVisible ? '50vh' : '70vh' : undefined
+                  height: fullScreen ? isKeyboardVisible ? '40vh' : '70vh' : undefined
                 }}
                 placeholder="Paste your content here..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onFocus={() => setFullScreen(true)}
               />
-            </div>
 
-            {(fullScreen || content.length > 0) && (
-              <button
-                onClick={splitContent}
-                className={`w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors ${
-                  isKeyboardVisible ? 'fixed bottom-4 left-0 mx-4 w-[calc(100%-2rem)]' : ''
-                }`}
-              >
-                Split Content
-              </button>
-            )}
+              {(fullScreen || content.length > 0) && (
+                <button
+                  ref={buttonRef}
+                  onClick={splitContent}
+                  className={`w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors ${
+                    isKeyboardVisible ? 'sticky bottom-4' : ''
+                  }`}
+                  style={{
+                    position: isKeyboardVisible ? 'fixed' : 'relative',
+                    bottom: isKeyboardVisible ? '20px' : 'auto',
+                    left: isKeyboardVisible ? '0' : 'auto',
+                    width: isKeyboardVisible ? 'calc(100% - 2rem)' : '100%',
+                    margin: isKeyboardVisible ? '0 1rem' : '0',
+                    zIndex: isKeyboardVisible ? '100' : 'auto'
+                  }}
+                >
+                  Split Content
+                </button>
+              )}
+            </div>
 
             {!fullScreen && (
               <div className="space-y-3">
