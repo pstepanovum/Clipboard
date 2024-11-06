@@ -7,25 +7,73 @@ import {
   ChevronDown,
   Settings,
   Trash,
+  X,
 } from "lucide-react";
 
 const ContentSplitterPage = () => {
   const [content, setContent] = useState<string>("");
   const [blocks, setBlocks] = useState<string[]>([]);
-  const [expandedBlocks, setExpandedBlocks] = useState<Record<number, boolean>>(
-    {}
-  );
+  const [expandedBlocks, setExpandedBlocks] = useState<Record<number, boolean>>({});
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [copyFeedback, setCopyFeedback] = useState<number | null>(null);
-  const [fullScreen, setFullScreen] = useState<boolean>(false); // Full-screen mode state
+  const [fullScreen, setFullScreen] = useState<boolean>(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  // Prevent page scroll in full-screen mode
+  // Handle iOS keyboard and viewport adjustments
+  useEffect(() => {
+    const handleFocus = () => {
+      setIsKeyboardVisible(true);
+      // Add delay to ensure smooth transition after keyboard appears
+      setTimeout(() => {
+        if (contentRef.current) {
+          contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    };
+
+    const handleBlur = () => {
+      setIsKeyboardVisible(false);
+    };
+
+    // Handle iOS viewport height changes
+    const handleResize = () => {
+      // Only update if we're in fullscreen mode
+      if (fullScreen) {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      }
+    };
+
+    const textArea = textAreaRef.current;
+    if (textArea) {
+      textArea.addEventListener('focus', handleFocus);
+      textArea.addEventListener('blur', handleBlur);
+    }
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial call
+
+    return () => {
+      if (textArea) {
+        textArea.removeEventListener('focus', handleFocus);
+        textArea.removeEventListener('blur', handleBlur);
+      }
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [fullScreen]);
+
+  // Prevent scrolling in fullscreen
   useEffect(() => {
     if (fullScreen) {
       document.body.style.overflow = "hidden";
+      // Set initial viewport height
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
     } else {
       document.body.style.overflow = "";
+      document.documentElement.style.removeProperty('--vh');
     }
   }, [fullScreen]);
 
@@ -46,7 +94,16 @@ const ContentSplitterPage = () => {
     setBlocks((prevBlocks) => [...prevBlocks, ...sections]);
     setContent("");
     setExpandedBlocks({});
-    setFullScreen(false); // Exit full-screen after splitting
+    setFullScreen(false);
+    setIsKeyboardVisible(false);
+  };
+
+  const exitFullScreen = () => {
+    setFullScreen(false);
+    setIsKeyboardVisible(false);
+    if (textAreaRef.current) {
+      textAreaRef.current.blur();
+    }
   };
 
   const clearAllSections = () => {
@@ -56,21 +113,7 @@ const ContentSplitterPage = () => {
 
   const copyToClipboard = async (text: string, index: number) => {
     try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        textArea.style.top = "-999999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-      }
-
+      await navigator.clipboard.writeText(text);
       setCopyFeedback(index);
       setTimeout(() => setCopyFeedback(null), 1500);
     } catch (err) {
@@ -88,7 +131,6 @@ const ContentSplitterPage = () => {
   return (
     <main className="min-h-screen bg-gray-900 text-white py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        {/* Only show header if not in full-screen mode */}
         {!fullScreen && (
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-white sm:text-3xl">
@@ -104,57 +146,72 @@ const ContentSplitterPage = () => {
           className={`bg-gray-800 rounded-lg shadow ${
             fullScreen ? "fixed inset-0 z-50" : ""
           }`}
+          style={fullScreen ? { height: 'calc(var(--vh, 1vh) * 100)' } : {}}
         >
           <div
             className={`p-4 sm:p-6 space-y-4 ${
               fullScreen ? "h-full flex flex-col" : ""
             }`}
           >
-            <div className="flex justify-between items-center">
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className="inline-flex items-center space-x-2 text-gray-400 hover:text-gray-200"
-              >
-                <Settings className="w-4 h-4" />
-                <span className="text-sm">Settings</span>
-              </button>
-              {blocks.length > 0 && !fullScreen && (
+            {fullScreen && (
+              <div className="flex justify-between items-center">
                 <button
-                  onClick={clearAllSections}
-                  className="inline-flex items-center space-x-2 text-red-500 hover:text-red-400"
+                  onClick={exitFullScreen}
+                  className="p-2 hover:bg-gray-700 rounded-full"
                 >
-                  <Trash className="w-4 h-4" />
-                  <span className="text-sm">Clear All</span>
+                  <X className="w-6 h-6" />
                 </button>
-              )}
-            </div>
+              </div>
+            )}
 
-            <div className="space-y-2 flex-grow relative">
+            {!fullScreen && (
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="inline-flex items-center space-x-2 text-gray-400 hover:text-gray-200"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span className="text-sm">Settings</span>
+                </button>
+                {blocks.length > 0 && (
+                  <button
+                    onClick={clearAllSections}
+                    className="inline-flex items-center space-x-2 text-red-500 hover:text-red-400"
+                  >
+                    <Trash className="w-4 h-4" />
+                    <span className="text-sm">Clear All</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div 
+              ref={contentRef}
+              className={`space-y-2 flex-grow relative ${
+                isKeyboardVisible ? 'pb-20' : ''
+              }`}
+            >
               <textarea
                 ref={textAreaRef}
                 className={`w-full p-4 text-base sm:text-lg border rounded-md font-mono resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white ${
-                  fullScreen ? "h-[calc(90vh-4rem)]" : "h-15"
+                  fullScreen ? "flex-grow" : "h-32"
                 }`}
+                style={{
+                  height: fullScreen ? isKeyboardVisible ? '50vh' : '70vh' : undefined
+                }}
                 placeholder="Paste your content here..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onFocus={() => setFullScreen(true)}
               />
-
-              {fullScreen && (
-                <button
-                  onClick={splitContent}
-                  className="w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors fixed bottom-4 left-0"
-                >
-                  Split Content
-                </button>
-              )}
             </div>
 
-            {!fullScreen && (
+            {(fullScreen || content.length > 0) && (
               <button
                 onClick={splitContent}
-                className="w-full sm:w-auto px-5 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                className={`w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors ${
+                  isKeyboardVisible ? 'fixed bottom-4 left-0 mx-4 w-[calc(100%-2rem)]' : ''
+                }`}
               >
                 Split Content
               </button>
