@@ -15,7 +15,9 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Clipboard.",
-  description: "Clipboard. Built with Next.js. This project is a simple clipboard manager that helps you keep track of your copied text and manage it efficiently.",
+  description:
+    "Clipboard. Built with Next.js. This project is a simple clipboard manager that helps you keep track of your copied text and manage it efficiently.",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
 };
 
 export default function RootLayout({
@@ -33,11 +35,6 @@ export default function RootLayout({
           <main className="flex-grow">
             {children}
           </main>
-
-          {/* Footer */}
-          <footer className="mt-auto pt-8 pb-4 text-sm text-center text-gray-500">
-            © {new Date().getFullYear()} Clipboard. Built with Next.js.
-          </footer>
         </div>
       </body>
     </html>

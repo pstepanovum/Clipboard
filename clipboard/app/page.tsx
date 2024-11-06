@@ -1,13 +1,21 @@
 // app/content-splitter/page.tsx
-'use client';
+"use client";
 
-import React, { useState, useRef } from 'react';
-import { Clipboard, ChevronRight, ChevronDown, Settings, Trash } from 'lucide-react';
+import React, { useState, useRef } from "react";
+import {
+  Clipboard,
+  ChevronRight,
+  ChevronDown,
+  Settings,
+  Trash,
+} from "lucide-react";
 
 const ContentSplitterPage = () => {
-  const [content, setContent] = useState<string>('');
+  const [content, setContent] = useState<string>("");
   const [blocks, setBlocks] = useState<string[]>([]);
-  const [expandedBlocks, setExpandedBlocks] = useState<Record<number, boolean>>({});
+  const [expandedBlocks, setExpandedBlocks] = useState<Record<number, boolean>>(
+    {}
+  );
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [copyFeedback, setCopyFeedback] = useState<number | null>(null);
   const [fullScreen, setFullScreen] = useState<boolean>(false); // Full-screen mode state
@@ -17,18 +25,18 @@ const ContentSplitterPage = () => {
     const mainSectionRegex = /(?=\n?\d+\.\s)/;
     let sections = content
       .split(mainSectionRegex)
-      .map(section => section.trim())
-      .filter(section => section.length > 0);
+      .map((section) => section.trim())
+      .filter((section) => section.length > 0);
 
     if (sections.length <= 1) {
       sections = content
         .split(/\n\s*\n+/)
-        .map(section => section.trim())
-        .filter(section => section.length > 0);
+        .map((section) => section.trim())
+        .filter((section) => section.length > 0);
     }
 
-    setBlocks(prevBlocks => [...prevBlocks, ...sections]);
-    setContent('');
+    setBlocks((prevBlocks) => [...prevBlocks, ...sections]);
+    setContent("");
     setExpandedBlocks({});
     setFullScreen(false); // Exit full-screen after splitting
   };
@@ -43,29 +51,29 @@ const ContentSplitterPage = () => {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(text);
       } else {
-        const textArea = document.createElement('textarea');
+        const textArea = document.createElement("textarea");
         textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        document.execCommand('copy');
+        document.execCommand("copy");
         document.body.removeChild(textArea);
       }
 
       setCopyFeedback(index);
       setTimeout(() => setCopyFeedback(null), 1500);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error("Failed to copy text: ", err);
     }
   };
 
   const toggleBlock = (index: number) => {
-    setExpandedBlocks(prev => ({
+    setExpandedBlocks((prev) => ({
       ...prev,
-      [index]: !prev[index]
+      [index]: !prev[index],
     }));
   };
 
@@ -75,13 +83,25 @@ const ContentSplitterPage = () => {
         {/* Only show header if not in full-screen mode */}
         {!fullScreen && (
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-white sm:text-3xl">Content Splitter</h1>
-            <p className="mt-2 text-sm text-gray-400">Paste your content and split it into manageable sections</p>
+            <h1 className="text-2xl font-bold text-white sm:text-3xl">
+              Content Splitter
+            </h1>
+            <p className="mt-2 text-sm text-gray-400">
+              Paste your content and split it into manageable sections
+            </p>
           </div>
         )}
 
-        <div className={`bg-gray-800 rounded-lg shadow ${fullScreen ? 'fixed inset-0 z-50' : ''}`}>
-          <div className={`p-4 sm:p-6 space-y-4 ${fullScreen ? 'h-full flex flex-col' : ''}`}>
+        <div
+          className={`bg-gray-800 rounded-lg shadow ${
+            fullScreen ? "fixed inset-0 z-50" : ""
+          }`}
+        >
+          <div
+            className={`p-4 sm:p-6 space-y-4 ${
+              fullScreen ? "h-full flex flex-col" : ""
+            }`}
+          >
             <div className="flex justify-between items-center">
               <button
                 onClick={() => setShowSettings(!showSettings)}
@@ -103,36 +123,42 @@ const ContentSplitterPage = () => {
 
             <div className="space-y-2 flex-grow relative">
               <textarea
-              ref={textAreaRef}
-              className={`w-full p-4 text-sm sm:text-base border rounded-md font-mono resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white ${fullScreen ? 'h-[calc(90vh-4rem)]' : 'h-15'}`}
-              placeholder="Paste your content here..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onFocus={() => setFullScreen(true)}
+                ref={textAreaRef}
+                className={`w-full p-4 text-base sm:text-lg border rounded-md font-mono resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white ${
+                  fullScreen ? "h-[calc(90vh-4rem)]" : "h-15"
+                }`}
+                placeholder="Paste your content here..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onFocus={() => setFullScreen(true)}
               />
+
               {fullScreen && (
-              <button
-                onClick={splitContent}
-                className="w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors fixed bottom-4 left-0"
-              >
-                Split Content
-              </button>
+                <button
+                  onClick={splitContent}
+                  className="w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors fixed bottom-4 left-0"
+                >
+                  Split Content
+                </button>
               )}
             </div>
 
             {!fullScreen && (
               <button
-              onClick={splitContent}
-              className="w-full sm:w-auto px-5 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                onClick={splitContent}
+                className="w-full sm:w-auto px-5 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
               >
-              Split Content
+                Split Content
               </button>
             )}
 
             {!fullScreen && (
               <div className="space-y-3">
                 {blocks.map((block, index) => (
-                  <div key={index} className="relative border rounded-lg hover:bg-gray-700 transition-colors">
+                  <div
+                    key={index}
+                    className="relative border rounded-lg hover:bg-gray-700 transition-colors"
+                  >
                     <div
                       className="p-3 sm:p-4 cursor-pointer touch-manipulation"
                       onClick={() => copyToClipboard(block, index)}
@@ -154,7 +180,7 @@ const ContentSplitterPage = () => {
                         <div className="flex-grow">
                           <div
                             className={`whitespace-pre-wrap text-sm sm:text-base ${
-                              expandedBlocks[index] ? '' : 'line-clamp-2'
+                              expandedBlocks[index] ? "" : "line-clamp-2"
                             }`}
                           >
                             {block}
@@ -162,7 +188,9 @@ const ContentSplitterPage = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           {copyFeedback === index && (
-                            <span className="text-green-400 text-sm">Copied!</span>
+                            <span className="text-green-400 text-sm">
+                              Copied!
+                            </span>
                           )}
                           <Clipboard className="w-4 h-4 text-gray-400" />
                         </div>
