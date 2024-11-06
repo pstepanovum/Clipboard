@@ -3,9 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --vh: 1vh;
   --background: #ffffff;
   --foreground: #171717;
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  --safe-area-inset-top: env(safe-area-inset-top);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,34 +16,92 @@
   }
 }
 
+/* Base styles */
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  line-height: 1.5; /* Improving line height for readability */
+  font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+  overscroll-behavior-y: none;
 }
 
-input, textarea {
-  font-size: 16px; /* Ensure a font size of 16px or larger */
-  touch-action: manipulation; /* Prevents zooming when focusing on form elements */
-  line-height: 1.5; /* Improving readability for inputs */
+/* Form elements optimization */
+input, 
+textarea, 
+select, 
+button {
+  font-size: 16px;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  border-radius: 8px;
+  margin: 0;
+  padding: 12px 16px;
 }
 
-/* Optional: Add responsive typography */
+/* Prevent unwanted text selection */
+.no-select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth scrolling for iOS */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* iOS-style button active state */
+button:active {
+  opacity: 0.7;
+  transition: opacity 0.1s ease;
+}
+
+/* Fix for iOS momentum scrolling */
+.fixed-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* iOS-specific media queries */
+@supports (-webkit-touch-callout: none) {
+  /* iOS-only styles */
+  .ios-bottom-padding {
+    padding-bottom: max(20px, var(--safe-area-inset-bottom));
+  }
+  
+  .ios-top-padding {
+    padding-top: max(20px, var(--safe-area-inset-top));
+  }
+}
+
+/* Responsive typography */
 @media (max-width: 768px) {
   body {
-    font-size: 1rem; /* Use rem for scalability */
+    font-size: 16px;
+    line-height: 1.4;
   }
-  input, textarea {
-    font-size: 1rem; /* Maintain 16px on small screens */
-  }
+  
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
 }
 
+/* Larger screens */
 @media (min-width: 1024px) {
   body {
-    font-size: 1.125rem; /* Slightly larger text on larger screens */
+    font-size: 18px;
+    line-height: 1.6;
   }
-  input, textarea {
-    font-size: 1.125rem; /* Make text area and input slightly larger */
-  }
+  
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.75rem; }
+  h3 { font-size: 1.5rem; }
 }
